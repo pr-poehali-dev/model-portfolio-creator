@@ -1,20 +1,43 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
 
+const API_URL = 'https://functions.poehali.dev/706554e8-d97a-406e-be6b-f2bc0f367c6c';
+
 const Index = () => {
   const [activeFilter, setActiveFilter] = useState('all');
+  const [portfolioItems, setPortfolioItems] = useState<any[]>([]);
+  const [videos, setVideos] = useState<any[]>([]);
+  const [profile, setProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const portfolioItems = [
-    { id: 1, category: 'fashion', image: 'https://cdn.poehali.dev/projects/17b51b10-9fe4-4140-a920-ac8517675a1a/files/6e539968-6a0a-4234-88df-11d4653e11c8.jpg', title: 'Studio Editorial' },
-    { id: 2, category: 'outdoor', image: 'https://cdn.poehali.dev/projects/17b51b10-9fe4-4140-a920-ac8517675a1a/files/af92bad2-5921-4b2e-bc16-e4b2c3483b5d.jpg', title: 'Natural Light' },
-    { id: 3, category: 'beauty', image: 'https://cdn.poehali.dev/projects/17b51b10-9fe4-4140-a920-ac8517675a1a/files/2480b63e-661d-4193-86a0-b4fcee3e605a.jpg', title: 'Beauty Shot' },
-    { id: 4, category: 'fashion', image: 'https://cdn.poehali.dev/projects/17b51b10-9fe4-4140-a920-ac8517675a1a/files/6e539968-6a0a-4234-88df-11d4653e11c8.jpg', title: 'High Fashion' },
-    { id: 5, category: 'outdoor', image: 'https://cdn.poehali.dev/projects/17b51b10-9fe4-4140-a920-ac8517675a1a/files/af92bad2-5921-4b2e-bc16-e4b2c3483b5d.jpg', title: 'Lifestyle' },
-    { id: 6, category: 'beauty', image: 'https://cdn.poehali.dev/projects/17b51b10-9fe4-4140-a920-ac8517675a1a/files/2480b63e-661d-4193-86a0-b4fcee3e605a.jpg', title: 'Portrait' },
-  ];
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [portfolioRes, videosRes, profileRes] = await Promise.all([
+          fetch(`${API_URL}?type=portfolio`),
+          fetch(`${API_URL}?type=videos`),
+          fetch(`${API_URL}?type=profile`)
+        ]);
+
+        const portfolioData = await portfolioRes.json();
+        const videosData = await videosRes.json();
+        const profileData = await profileRes.json();
+
+        setPortfolioItems(portfolioData.items || []);
+        setVideos(videosData.videos || []);
+        setProfile(profileData.profile);
+      } catch (error) {
+        console.error('Failed to load data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
 
   const filteredItems = activeFilter === 'all' 
     ? portfolioItems 
@@ -51,10 +74,10 @@ const Index = () => {
             <div className="animate-fade-in">
               <Badge className="mb-4 bg-gradient-to-r from-primary to-secondary">Профессиональная модель</Badge>
               <h1 className="text-6xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                Анастасия<br />Волкова
+                {profile?.full_name || 'Анастасия Волкова'}
               </h1>
               <p className="text-xl text-muted-foreground mb-8">
-                Опыт работы с ведущими брендами и фотографами
+                {profile?.bio || 'Опыт работы с ведущими брендами и фотографами'}
               </p>
               <div className="flex gap-4">
                 <Button size="lg" className="bg-gradient-to-r from-primary to-secondary hover:opacity-90">
@@ -110,19 +133,19 @@ const Index = () => {
               <div className="space-y-3 text-muted-foreground">
                 <div className="flex justify-between">
                   <span>Рост:</span>
-                  <span className="font-semibold text-foreground">178 см</span>
+                  <span className="font-semibold text-foreground">{profile?.height || 178} см</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Обхват груди:</span>
-                  <span className="font-semibold text-foreground">86 см</span>
+                  <span className="font-semibold text-foreground">{profile?.bust || 86} см</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Обхват талии:</span>
-                  <span className="font-semibold text-foreground">62 см</span>
+                  <span className="font-semibold text-foreground">{profile?.waist || 62} см</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Обхват бедер:</span>
-                  <span className="font-semibold text-foreground">92 см</span>
+                  <span className="font-semibold text-foreground">{profile?.hips || 92} см</span>
                 </div>
               </div>
             </Card>
@@ -137,19 +160,19 @@ const Index = () => {
               <div className="space-y-3 text-muted-foreground">
                 <div className="flex justify-between">
                   <span>Одежда:</span>
-                  <span className="font-semibold text-foreground">42-44 (RU)</span>
+                  <span className="font-semibold text-foreground">{profile?.clothing_size || '42-44 (RU)'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Обувь:</span>
-                  <span className="font-semibold text-foreground">38 (EU)</span>
+                  <span className="font-semibold text-foreground">{profile?.shoe_size || '38 (EU)'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Платье:</span>
-                  <span className="font-semibold text-foreground">S-M</span>
+                  <span className="font-semibold text-foreground">{profile?.dress_size || 'S-M'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Джинсы:</span>
-                  <span className="font-semibold text-foreground">W26-27</span>
+                  <span className="font-semibold text-foreground">{profile?.jeans_size || 'W26-27'}</span>
                 </div>
               </div>
             </Card>
@@ -164,19 +187,19 @@ const Index = () => {
               <div className="space-y-3 text-muted-foreground">
                 <div className="flex justify-between">
                   <span>Цвет волос:</span>
-                  <span className="font-semibold text-foreground">Светло-русый</span>
+                  <span className="font-semibold text-foreground">{profile?.hair_color || 'Светло-русый'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Цвет глаз:</span>
-                  <span className="font-semibold text-foreground">Голубые</span>
+                  <span className="font-semibold text-foreground">{profile?.eye_color || 'Голубые'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Возраст:</span>
-                  <span className="font-semibold text-foreground">24 года</span>
+                  <span className="font-semibold text-foreground">{profile?.age || 24} {profile?.age ? 'года' : 'лет'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Опыт:</span>
-                  <span className="font-semibold text-foreground">5+ лет</span>
+                  <span className="font-semibold text-foreground">{profile?.experience_years || 5}+ лет</span>
                 </div>
               </div>
             </Card>
@@ -247,7 +270,7 @@ const Index = () => {
                 style={{animationDelay: `${index * 0.1}s`}}
               >
                 <img 
-                  src={item.image} 
+                  src={item.image_url || item.image} 
                   alt={item.title}
                   className="w-full aspect-[3/4] object-cover transition-transform duration-500 group-hover:scale-110"
                 />
@@ -271,27 +294,30 @@ const Index = () => {
           <p className="text-center text-muted-foreground mb-12">Видео-портфолио и съемки</p>
 
           <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-            <Card className="overflow-hidden group hover:shadow-2xl transition-all duration-300">
-              <div className="aspect-video bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary to-secondary opacity-10"></div>
-                <Icon name="Play" size={64} className="text-primary group-hover:scale-110 transition-transform relative z-10" />
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold mb-2">Fashion Week 2024</h3>
-                <p className="text-muted-foreground">Показ коллекции весна-лето</p>
-              </div>
-            </Card>
-
-            <Card className="overflow-hidden group hover:shadow-2xl transition-all duration-300">
-              <div className="aspect-video bg-gradient-to-br from-secondary/20 to-accent/20 flex items-center justify-center relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-secondary to-accent opacity-10"></div>
-                <Icon name="Play" size={64} className="text-secondary group-hover:scale-110 transition-transform relative z-10" />
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold mb-2">Behind the Scenes</h3>
-                <p className="text-muted-foreground">Закулисье фотосессии</p>
-              </div>
-            </Card>
+            {loading ? (
+              <p className="col-span-2 text-center text-muted-foreground">Загрузка...</p>
+            ) : videos.length > 0 ? (
+              videos.map((video) => (
+                <Card key={video.id} className="overflow-hidden group hover:shadow-2xl transition-all duration-300">
+                  <div className="aspect-video bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary to-secondary opacity-10"></div>
+                    {video.video_url ? (
+                      <a href={video.video_url} target="_blank" rel="noopener noreferrer" className="absolute inset-0 flex items-center justify-center">
+                        <Icon name="Play" size={64} className="text-primary group-hover:scale-110 transition-transform relative z-10" />
+                      </a>
+                    ) : (
+                      <Icon name="Play" size={64} className="text-primary group-hover:scale-110 transition-transform relative z-10" />
+                    )}
+                  </div>
+                  <div className="p-6">
+                    <h3 className="text-xl font-bold mb-2">{video.title}</h3>
+                    <p className="text-muted-foreground">{video.description}</p>
+                  </div>
+                </Card>
+              ))
+            ) : (
+              <p className="col-span-2 text-center text-muted-foreground">Видео пока не добавлены</p>
+            )}
           </div>
         </div>
       </section>

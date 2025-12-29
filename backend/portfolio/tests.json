@@ -1,0 +1,34 @@
+{
+  "tests": [
+    {
+      "name": "Get portfolio items",
+      "method": "GET",
+      "path": "/?type=portfolio",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "items": "array"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Get videos",
+      "method": "GET",
+      "path": "/?type=videos",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "videos": "array"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Get profile",
+      "method": "GET",
+      "path": "/?type=profile",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "profile": "object"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
